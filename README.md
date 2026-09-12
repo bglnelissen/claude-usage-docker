@@ -181,6 +181,10 @@ The published port answers without any authentication, and the `data` volume
 holds your Claude login. Keep both on your own network. `compose.yml` binds to
 loopback for that reason, and it is on you to widen it no further than you need.
 
+## License
+
+MIT. See [LICENSE](LICENSE).
+
 ## Related
 
 [claude-usage](https://github.com/bglnelissen/claude-usage) is the same
