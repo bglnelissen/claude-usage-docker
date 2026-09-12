@@ -1,0 +1,24 @@
+services:
+  claude-usage:
+    build: .
+    image: claude-usage:local
+    container_name: claude-usage
+    restart: unless-stopped
+    init: true
+    ports:
+      # Loopback only. To reach it from other machines on your network, put your
+      # own LAN address in front, for example "192.168.1.10:8130:8130". Do not
+      # publish it to the internet: anyone who can reach it sees your usage.
+      - "127.0.0.1:8130:8130"
+    environment:
+      TZ: Europe/Amsterdam
+      CACHE_SECONDS: "60"
+    volumes:
+      - data:/data
+    logging:
+      options:
+        max-size: "1m"
+        max-file: "2"
+
+volumes:
+  data:
