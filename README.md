@@ -41,7 +41,8 @@ cd claude-usage-docker
 docker compose build
 ```
 
-Then sign in once (see below), and start it:
+Set `TZ` in `compose.yml` to your own timezone first, or the reset times come
+back on Amsterdam clock time. Then sign in once (see below), and start it:
 
 ```bash
 docker compose up -d
@@ -50,8 +51,14 @@ curl -s http://127.0.0.1:8130/
 
 ## Signing in
 
-This is the only awkward part. Claude Code needs an interactive sign-in, and the
-login then lives in the `data` volume and survives restarts and rebuilds.
+**This step needs a person at a browser.** It is the one part that cannot be
+automated away: Claude Code opens an Anthropic sign-in page and you paste back
+the code it gives you. Everything after this is unattended, and the login lives
+in the `data` volume, so it survives restarts and rebuilds and you do it once.
+
+If you are running these commands through something without a terminal, plain
+`docker compose run` fails with "the input device is not a TTY". Use the tmux
+recipe further down, and have a human ready to supply the code.
 
 ```bash
 docker compose run --rm claude-usage claude
@@ -125,7 +132,7 @@ Environment variables, set in `compose.yml`:
 | `PORT` | `8130` | port inside the container |
 | `CACHE_SECONDS` | `60` | how long a measurement is reused |
 | `STALE_MAX_SECONDS` | `3600` | how long a failed measurement falls back to the previous one |
-| `TZ` | `Europe/Amsterdam` | the timezone the reset times are rendered in |
+| `TZ` | `Europe/Amsterdam` | the timezone the reset times are rendered in; change it to yours |
 | `CLAUDE_BIN` | unset | path to `claude`, if it is not on `PATH` |
 
 Build argument:

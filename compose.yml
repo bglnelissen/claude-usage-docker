@@ -11,6 +11,8 @@ services:
       # publish it to the internet: anyone who can reach it sees your usage.
       - "127.0.0.1:8130:8130"
     environment:
+      # Set this to your own timezone. The reset times are rendered in it, so
+      # leaving it on Amsterdam gives you Amsterdam clock times.
       TZ: Europe/Amsterdam
       CACHE_SECONDS: "60"
     volumes:
