@@ -12,6 +12,9 @@ Home Assistant, a dashboard, or anything else can read it:
 `current` is the current session (the five hour window), `weekly` is the week.
 Both are percent used, the same numbers you see on claude.ai/settings/usage.
 
+Handing this repository to a coding agent to set up? Point it at
+[For a coding agent](#for-a-coding-agent) below.
+
 ## How it works
 
 The container runs Claude Code and asks it `claude -p /usage`. That is a local
@@ -32,6 +35,52 @@ expires is the slow one.
   this reads subscription usage, and the code explicitly drops
   `ANTHROPIC_API_KEY` and `ANTHROPIC_AUTH_TOKEN` from the environment so a key
   lying around cannot quietly start spending credits.
+
+## For a coding agent
+
+You have been given this repository to set up. Work in this order, on the machine
+that will host the service.
+
+1. `docker compose build`.
+2. Ask the user for their timezone and put it in `compose.yml` as `TZ`. Do not
+   leave it on `Europe/Amsterdam`; the reset times are rendered in it.
+3. Ask where the service must be reachable from. `compose.yml` publishes on
+   `127.0.0.1:8130`, which is right when the consumer runs on the same machine.
+   For another machine on the LAN, put that host's own LAN address in front:
+   `"192.168.1.10:8130:8130"`. Never publish it to the internet: the port
+   answers without authentication.
+4. **Stop here and hand back to the user.** Signing in is interactive and you
+   cannot finish it alone: Claude Code prints an Anthropic URL, a person signs in
+   with their subscription in a browser, and only they can read back the code.
+   Either let them run `docker compose run --rm claude-usage claude` themselves,
+   or drive it with the tmux recipe below and ask them for just the code. Without
+   a terminal, `docker compose run` fails with "the input device is not a TTY".
+5. Verify the login took, before starting anything:
+
+   ```bash
+   docker compose run --rm claude-usage python3 -c \
+     "import claude_usage, json; print(json.dumps(claude_usage.fetch(), indent=2))"
+   ```
+
+6. `docker compose up -d`, then `curl -s http://127.0.0.1:8130/` (or the address
+   you bound in step 3). Report the JSON back to the user so they can see it
+   works.
+7. If they want it in Home Assistant, add the REST sensor below, with the
+   address from step 3.
+
+What will otherwise cost you a cycle or two:
+
+- A `503` whose body says "no subscription data in the output of /usage" means
+  step 4 never completed. It is not a bug; nobody has signed in yet.
+- Claude Code wraps the sign-in URL at the terminal width, and
+  `tmux capture-pane -J` does not join it back. Join the lines between
+  `https://` and "Paste code here" yourself, with nothing in between.
+- On the trust question, **No, exit** is preselected. Send a Down before Enter,
+  or the session closes and you start over.
+- The first request after the cache expires takes about two seconds. That is the
+  measurement running, not a hang.
+- Do not run the tests as proof that the service works: they only exercise the
+  parser against stored samples and pass fine without a login.
 
 ## Setup
 
